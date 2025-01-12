@@ -1,0 +1,186 @@
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quintessential&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quintessential&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quintessential&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(to right, #ffffff, #ffafaf);
+    height: 100vh;
+    font-family: 'Anton';
+}
+/* title */
+.t-1 {
+    margin-top: 150px;
+    text-align: center;
+    -webkit-user-select: none;
+    user-select: none;
+    margin-bottom: 50px;
+}
+
+.music-container {
+    background: linear-gradient(to right);
+    border-radius: 15px;
+    background:linear-gradient(to right,#fff,#ffd448) ;
+    box-shadow: 0 10px 20px 0 #a3a3a3;
+    padding: 20px 30px;
+    display: flex;
+    position: relative;
+    margin: 80px 0;
+    z-index: 10;
+}
+
+.img-container {
+    position: relative;
+    width: 110px;
+}
+/* center white circle  */
+.img-container::after {
+    content: '';
+    background-color: #fff;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 55px;
+    left: 55px;
+    width: 20px;
+    height: 20px;
+    transform: translate(-50%, 50%);
+    z-index: 2000;
+}
+/* Rotate & circle img */
+.img-container img {
+    border-radius: 50%;
+    object-fit: cover;
+    height: 110px;
+    width: inherit;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    animation: rotate 3s linear infinite;
+    animation-play-state: paused;
+}
+
+.music-container.play .img-container img {
+    animation-play-state: running;
+}
+
+.navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    direction: rtl;
+}
+/* Play next & prev button */
+.action-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 0;
+    color: #000000;
+    font-size: 25px;
+}
+
+.action-btn-big {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: transparent;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 10px;
+        border: 0;
+        color: #000000;
+        font-size: 25px;
+}
+
+.action-btn:focus {
+    outline: 2px solid #ff66ad;
+}
+/* play bar */
+.music-info {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 10px 10px 0 0;
+    position: absolute;
+    top: 0;
+    left: 20px;
+    width: calc(100% - 40px);
+    padding: 10px 10px 10px 150px;
+    opacity: 0;
+    transform: translateY(0%);
+    transition: transform 0.3s ease-in, opacity 0.3s ease-in;
+    z-index: 0;
+}
+
+.music-container.play .music-info {
+    opacity: 1;
+    transform: translateY(-100%);
+}
+
+/* play bar title*/
+
+.music-info h4 {
+    margin: 0;
+    font-size: 15px;
+    font-family: 'Michroma';
+    -webkit-user-select: none;
+    user-select: none;
+    text-align: center;
+    margin-right: 120px;
+    margin-bottom: 20px;
+}
+
+/* play bar Timer*/
+
+.progress-container {
+    position: relative;
+    width: 100%;
+    height: 20px;
+    border-radius: 10px;
+    font-family: Michroma;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.progress {
+    background-color: #ff71e0;
+    height:20%;
+    width: 0%;
+    border-radius: 10px;
+    transition: width 0.1s;
+}
+.volume{
+    direction: rtl;
+    transition: 0.5s ease;
+}
+
+.circle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border: 3px solid #ff50d3;
+    border-radius: 50%;
+    top: 35%;
+    transform: translateY(-75%);
+    pointer-events: none;
+}
+
+.time{
+    margin-top: 20px;
+    -webkit-user-select: none;
+    user-select: none;
+}
