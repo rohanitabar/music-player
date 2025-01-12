@@ -75,32 +75,32 @@ const songs = [
     {
         name: 'Koohe Ghaf',  
         displayName: 'Koohe Ghaf',   
-        path: '/music/Koohe Ghaf.mp3',  
+        path: './music/Koohe Ghaf.mp3',  
     },  
     {  
         name: 'Eshghemoon',  
         displayName: 'Eshghemoon',  
-        path: '/music/Eshghemoon.mp3'  
+        path: './music/Eshghemoon.mp3'  
     },  
     {  
         name: 'Emperatoore-Divooneha',  
         displayName: 'Emperatoore Divooneha',  
-        path: '/music/Emperatoore Divooneha.mp3'  
+        path: './music/Emperatoore Divooneha.mp3'  
     }  ,
     {  
         name: 'Baladam Boodi',  
         displayName: 'Baladam Boodi',  
-        path: '/music/Baladam Boodi.mp3'  
+        path: './music/Baladam Boodi.mp3'  
     }  ,
     {  
         name: '2ta Cheshat',  
         displayName: '2ta Cheshat',  
-        path: '/music/2ta Cheshat.mp3'  
+        path: './music/2ta Cheshat.mp3'  
     }  ,
     {  
         name: 'Rasti Rasti',  
         displayName: 'Rasti Rasti',  
-        path: '/music/Rasti Rasti.mp3'  
+        path: './music/Rasti Rasti.mp3'  
     } 
 ];  
 
