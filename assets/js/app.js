@@ -64,6 +64,7 @@ volumeIcon.addEventListener('click', e => {
         volumeIcon.innerHTML = `<i class="fas fa-volume-off"></i>`;
     } else {
         // Unmute the audio
+        
         audio.volume = 1; // Set volume to 1 (or a preferred level)
         sound.value = 1; // Update the sound input value
         volumeIcon.innerHTML = `<i class="fas fa-volume-up"></i>`;
@@ -71,6 +72,7 @@ volumeIcon.addEventListener('click', e => {
 });
 
 // Track list  
+
 const songs = [  
     {
         name: 'Koohe Ghaf',  
@@ -110,6 +112,7 @@ const Images = ['/img/Koohe-Ghaf.jpg','/img/Eshghemoon.jpg','/img/Emperatoore-Di
 let songIndex = 0;  
 
 // Load song  
+
 function loadSong(song) {  
     title.innerText = song.displayName;  
     audio.src = song.path;  
