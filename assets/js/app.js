@@ -11,6 +11,7 @@ const progressCircle = document.querySelector('.circle');
 const musicContainer = document.getElementById('music-container');
 const volumeSlider = document.getElementById('volume');
 const volumeButton = document.getElementById('volume-icon');
+const volumeValue = document.getElementById('volume-value');
 const coverImages = [...document.querySelectorAll('.img-container img')];
 
 const songs = [
@@ -34,10 +35,12 @@ function formatTime(seconds) {
 
 function updateVolumeControl() {
   const volume = audio.volume;
-  const icon = volume === 0 ? 'fa-volume-mute' : volume <= 0.5 ? 'fa-volume-down' : 'fa-volume-up';
+  const icon = volume === 0 ? 'fa-volume-xmark' : volume <= 0.5 ? 'fa-volume-low' : 'fa-volume-high';
   volumeButton.innerHTML = `<i class="fas ${icon}" aria-hidden="true"></i>`;
   volumeButton.setAttribute('aria-label', volume === 0 ? 'Unmute' : 'Mute');
   volumeButton.setAttribute('aria-pressed', String(volume === 0));
+  volumeValue.textContent = `${Math.round(volume * 100)}%`;
+  volumeSlider.style.setProperty('--volume-level', `${volume * 100}%`);
 }
 
 function updatePlaybackState() {
