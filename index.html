@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A lightweight music player for a six-track playlist." />
     <link rel="stylesheet" href="./assets/css/all.min.css" />
     <link rel="stylesheet" href="./assets/css/svg-with-js.min.css" />
-    <link rel="stylesheet" href="./assets/css/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="./assets/css/style.css" />
-    <script src="./assets/js/bootstrap.bundle.min.js"></script>
-    <script src="./assets/js/all.min.js"></script>
+    <script src="./assets/js/all.min.js" defer></script>
+    <script src="./assets/js/app.js" defer></script>
     <title>Music Player</title>
   </head>
 
@@ -17,28 +17,35 @@
     <div class="music-container" id="music-container">
       <div class="music-info">
         <h4 id="title"></h4>
-        <div class="progress-container" id="progress-container">
-          <div class="progress-bar progress" id="progress"></div>
-          <div class="circle" id="circle"></div>
-          <div class="time">
-            <span id="currTime">0:00</span>
-
-            <div class="time-line"></div>
-
-            <span id="durTime">0:00</span>
-          </div>
+        <div
+          class="progress-container"
+          id="progress-container"
+          role="slider"
+          tabindex="0"
+          aria-label="Seek through track"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <div class="progress-fill" id="progress"></div>
+          <div class="circle" aria-hidden="true"></div>
+        </div>
+        <div class="time" aria-live="off">
+          <span id="currTime">0:00</span>
+          <div class="time-line" aria-hidden="true"></div>
+          <span id="durTime">0:00</span>
         </div>
       </div>
 
-      <audio src="/music/Koohe Ghaf.mp3" id="audio"></audio>
+      <audio id="audio" preload="metadata"></audio>
 
       <div class="img-container" id="cover">
-        <img src="./img/Koohe-Ghaf.jpg" id="img-1" />
-        <img src="./img/Eshghemoon.jpg" id="img-2" />
-        <img src="./img/Emperatoore-Divooneha.jpg" id="img-3" />
-        <img src="./img/Baladam-Boodi.jpg" id="img-4" />
-        <img src="./img/2ta-Cheshat.jpg" id="img-5" />
-        <img src="./img/Rasti-Rasti.jpg" id="img-6" />
+        <img src="./img/Koohe-Ghaf.jpg" id="img-1" alt="Koohe Ghaf album cover" />
+        <img src="./img/Eshghemoon.jpg" id="img-2" alt="Eshghemoon album cover" hidden />
+        <img src="./img/Emperatoore-Divooneha.jpg" id="img-3" alt="Emperatoore Divooneha album cover" hidden />
+        <img src="./img/Baladam-Boodi.jpg" id="img-4" alt="Baladam Boodi album cover" hidden />
+        <img src="./img/2ta-Cheshat.jpg" id="img-5" alt="2ta Cheshat album cover" hidden />
+        <img src="./img/Rasti-Rasti.jpg" id="img-6" alt="Rasti Rasti album cover" hidden />
       </div>
 
       <div class="navigation">
@@ -51,23 +58,23 @@
             max="1"
             step="0.1"
             value="1"
+            aria-label="Volume"
           />
         </div>
         <div class="volum-container">
-          <button class="action-btn-big" id="volume-icon"></button>
+          <button class="action-btn-big" id="volume-icon" type="button" aria-label="Mute" aria-pressed="false"></button>
         </div>
 
-        <button class="action-btn" id="next">
-          <i class="fas fa-step-forward"></i>
+        <button class="action-btn" id="next" type="button" aria-label="Next track">
+          <i class="fas fa-step-forward" aria-hidden="true"></i>
         </button>
-        <button class="action-btn" id="play">
-          <i class="fas fa-play"></i>
+        <button class="action-btn" id="play" type="button" aria-label="Play">
+          <i class="fas fa-play" aria-hidden="true"></i>
         </button>
-        <button class="action-btn" id="prev">
-          <i class="fas fa-step-backward"></i>
+        <button class="action-btn" id="prev" type="button" aria-label="Previous track">
+          <i class="fas fa-step-backward" aria-hidden="true"></i>
         </button>
       </div>
     </div>
-    <script src="./assets/js/app.js"></script>
   </body>
 </html>

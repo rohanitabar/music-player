@@ -1,220 +1,146 @@
-const audio = document.getElementById('audio');  
-const playBtn = document.getElementById('play');  
-const prevBtn = document.getElementById('prev');  
-const nextBtn = document.getElementById('next');  
-const title = document.getElementById('title');  
-const currTime = document.getElementById('currTime');  
-const durTime = document.getElementById('durTime');  
-const progressContainer = document.getElementById('progress-container');  
-const progress = document.getElementById('progress');  
-const musicContainer = document.getElementById('music-container'); 
-const circle = document.getElementById('circle') ;
-const coverImg = document.getElementById('cover');  
-const sound = document.getElementById('volume');  
-const volumeIcon = document.getElementById('volume-icon');
+const audio = document.getElementById('audio');
+const playButton = document.getElementById('play');
+const previousButton = document.getElementById('prev');
+const nextButton = document.getElementById('next');
+const title = document.getElementById('title');
+const currentTimeLabel = document.getElementById('currTime');
+const durationLabel = document.getElementById('durTime');
+const seekBar = document.getElementById('progress-container');
+const progress = document.getElementById('progress');
+const progressCircle = document.querySelector('.circle');
+const musicContainer = document.getElementById('music-container');
+const volumeSlider = document.getElementById('volume');
+const volumeButton = document.getElementById('volume-icon');
+const coverImages = [...document.querySelectorAll('.img-container img')];
 
-// Download Image
-const img1 = document.getElementById('img-1');  
-const img2 = document.getElementById('img-2');  
-const img3 = document.getElementById('img-3');  
-const img4 = document.getElementById('img-4');  
-const img5 = document.getElementById('img-5');  
-const img6 = document.getElementById('img-6');  
+const songs = [
+  { title: 'Koohe Ghaf', file: 'Koohe Ghaf.mp3' },
+  { title: 'Eshghemoon', file: 'Eshghemoon.mp3' },
+  { title: 'Emperatoore Divooneha', file: 'Emperatoore Divooneha.mp3' },
+  { title: 'Baladam Boodi', file: 'Baladam Boodi.mp3' },
+  { title: '2ta Cheshat', file: '2ta Cheshat.mp3' },
+  { title: 'Rasti Rasti', file: 'Rasti Rasti.mp3' },
+];
 
-// Sound Song  
-// Set initial volume
-audio.volume = sound.value;  
+let songIndex = 0;
+let previousVolume = 1;
 
-// Event listener for volume control
-sound.addEventListener('input', function() {  
-  audio.volume = sound.value;  
-  
-  // Change Icon 
-function updateVolumeIcon() {
-
-    if (audio.volume === 0) {
-
-        volumeIcon.innerHTML = `<i class="fas fa-volume-mute"></i>`;
-
-    } else if (audio.volume > 0 && audio.volume <= 0.5) {
-
-        volumeIcon.innerHTML = `<i class="fas fa-volume-down"></i>`;
-
-    } else if (audio.volume > 0.5 && audio.volume < 1) {
-
-        volumeIcon.innerHTML = `<i class="fas fa-volume-up"></i>`;
-
-    } else if (audio.volume === 1) { 
-      volumeIcon.innerHTML = `<i class="fas fa-volume-up"></i>`
-    }
-
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
 }
-  // Initial call to set the correct icon based on the initial volume
 
-updateVolumeIcon();
+function updateVolumeControl() {
+  const volume = audio.volume;
+  const icon = volume === 0 ? 'fa-volume-mute' : volume <= 0.5 ? 'fa-volume-down' : 'fa-volume-up';
+  volumeButton.innerHTML = `<i class="fas ${icon}" aria-hidden="true"></i>`;
+  volumeButton.setAttribute('aria-label', volume === 0 ? 'Unmute' : 'Mute');
+  volumeButton.setAttribute('aria-pressed', String(volume === 0));
+}
+
+function updatePlaybackState() {
+  const isPlaying = !audio.paused && !audio.ended;
+  musicContainer.classList.toggle('play', isPlaying);
+  playButton.innerHTML = `<i class="fas fa-${isPlaying ? 'pause' : 'play'}" aria-hidden="true"></i>`;
+  playButton.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+}
+
+function loadSong(index) {
+  const song = songs[index];
+  title.textContent = song.title;
+  audio.src = `./music/${encodeURIComponent(song.file)}`;
+  audio.load();
+  coverImages.forEach((image, imageIndex) => {
+    image.hidden = imageIndex !== index;
+  });
+  progress.style.width = '0%';
+  seekBar.setAttribute('aria-valuenow', '0');
+  currentTimeLabel.textContent = '0:00';
+  durationLabel.textContent = '0:00';
+  updatePlaybackState();
+}
+
+async function playSong() {
+  try {
+    await audio.play();
+  } catch (error) {
+    updatePlaybackState();
+    if (error.name !== 'AbortError') console.error('Unable to play this track:', error);
+  }
+}
+
+function changeSong(direction) {
+  songIndex = (songIndex + direction + songs.length) % songs.length;
+  loadSong(songIndex);
+  playSong();
+}
+
+function updateProgress() {
+  const duration = audio.duration;
+  const currentTime = audio.currentTime;
+  const percentage = Number.isFinite(duration) && duration > 0 ? (currentTime / duration) * 100 : 0;
+  progress.style.width = `${percentage}%`;
+  progressCircle.style.left = `${percentage}%`;
+  seekBar.setAttribute('aria-valuenow', String(Math.round(percentage)));
+  currentTimeLabel.textContent = formatTime(currentTime);
+  durationLabel.textContent = formatTime(duration);
+}
+
+function seekTo(clientX) {
+  if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+  const bounds = seekBar.getBoundingClientRect();
+  if (bounds.width === 0) return;
+  const fraction = Math.min(1, Math.max(0, (clientX - bounds.left) / bounds.width));
+  audio.currentTime = fraction * audio.duration;
+}
+
+playButton.addEventListener('click', () => {
+  if (audio.paused) playSong();
+  else audio.pause();
 });
-// Event listener for volume icon click
-
-volumeIcon.addEventListener('click', e => {
-    // Check the current volume and toggle accordingly
-    if (audio.volume > 0) {
-        // Mute the audio
-        audio.volume = 0; // Set volume to 0
-        sound.value = 0; // Update the sound input value
-        volumeIcon.innerHTML = `<i class="fas fa-volume-off"></i>`;
-    } else {
-        // Unmute the audio
-        
-        audio.volume = 1; // Set volume to 1 (or a preferred level)
-        sound.value = 1; // Update the sound input value
-        volumeIcon.innerHTML = `<i class="fas fa-volume-up"></i>`;
-    }
+previousButton.addEventListener('click', () => changeSong(-1));
+nextButton.addEventListener('click', () => changeSong(1));
+audio.addEventListener('play', updatePlaybackState);
+audio.addEventListener('pause', updatePlaybackState);
+audio.addEventListener('ended', () => changeSong(1));
+audio.addEventListener('timeupdate', updateProgress);
+audio.addEventListener('loadedmetadata', updateProgress);
+audio.addEventListener('durationchange', updateProgress);
+audio.addEventListener('error', () => {
+  updatePlaybackState();
+  console.error(`Could not load audio file: ${audio.currentSrc}`);
 });
 
-// Track list  
-
-const songs = [  
-    {
-        name: 'Koohe Ghaf',  
-        displayName: 'Koohe Ghaf',   
-        path: './music/Koohe Ghaf.mp3',  
-    },  
-    {  
-        name: 'Eshghemoon',  
-        displayName: 'Eshghemoon',  
-        path: './music/Eshghemoon.mp3'  
-    },  
-    {  
-        name: 'Emperatoore-Divooneha',  
-        displayName: 'Emperatoore Divooneha',  
-        path: './music/Emperatoore Divooneha.mp3'  
-    }  ,
-    {  
-        name: 'Baladam Boodi',  
-        displayName: 'Baladam Boodi',  
-        path: './music/Baladam Boodi.mp3'  
-    }  ,
-    {  
-        name: '2ta Cheshat',  
-        displayName: '2ta Cheshat',  
-        path: './music/2ta Cheshat.mp3'  
-    }  ,
-    {  
-        name: 'Rasti Rasti',  
-        displayName: 'Rasti Rasti',  
-        path: './music/Rasti Rasti.mp3'  
-    } 
-];  
-
-const Images = ['/img/Koohe-Ghaf.jpg','/img/Eshghemoon.jpg','/img/Emperatoore-Divooneha.jpg','/img/Baladam-Boodi.jpg','/img/2ta-Cheshat.jpg','/img/Rasti-Rasti.jpg'];
-
-
-let songIndex = 0;  
-
-// Load song  
-
-function loadSong(song) {  
-    title.innerText = song.displayName;  
-    audio.src = song.path;  
-    coverImg.src = song.image;
-    audio.volume = 1;
-    sound.value = 1;
-    volumeIcon.innerHTML = `<i class="fas fa-volume-up"></i>`;
-    
-    // Update image visibility  
-    sound.value=10;  
-    img1.style.display = songIndex === 0 ? 'block' : 'none';  
-    img2.style.display = songIndex === 1 ? 'block' : 'none';  
-    img3.style.display = songIndex === 2 ? 'block' : 'none';  
-    img4.style.display = songIndex === 3 ? 'block' : 'none';
-    img5.style.display = songIndex === 4 ? 'block' : 'none'; 
-    img6.style.display = songIndex === 5 ? 'block' : 'none'; 
-
-    // Reset time display when loading a new song  
-    durTime.innerText = '0:00';  
-    currTime.innerText = '0:00';  
-}  
-
-// Play music  
-function playSong() {  
-    musicContainer.classList.add('play');  
-    playBtn.innerHTML = `<i class="fas fa-pause"></i>`;  
-    audio.play();  
-}  
-
-// Pause music  
-function pauseSong() {  
-    musicContainer.classList.remove('play');  
-    playBtn.innerHTML = `<i class="fas fa-play"></i>`;  
-    audio.pause();  
-}  
-
-// Next & prev btn  
-function nextSong() {  
-    songIndex = (songIndex + 1) % songs.length;  
-    loadSong(songs[songIndex]);  
-    playSong();  
-}  
-
-function prevSong() {  
-    songIndex = (songIndex - 1 + songs.length) % songs.length;  
-    loadSong(songs[songIndex]);  
-    playSong();  
-}  
-
-// Update progress bar  
-function updateProgress(e) {  
-    const { duration, currentTime } = e.srcElement;  
-    if (duration) {  
-        // Calculate progress percentage  
-        const progressPercent = (currentTime / duration) * 100;  
-        // Update width of the progress bar  
-        progress.style.width = `${progressPercent}%`;   
-
-        // Update the position of the circle  
-        const containerWidth = document.getElementById('progress-container').clientWidth;  // Get the width of the progress container  
-        const circlePosition = (progressPercent / 100) * (containerWidth - 20);  // Calculate the circle's position (subtracting circle width for proper alignment)  
-        circle.style.left = `${circlePosition}px`;  // Set the left position of the circle  
-
-        // Update time display  
-        const durationMinutes = Math.floor(duration / 60);  
-        const durationSeconds = Math.floor(duration % 60);  
-        const currentMinutes = Math.floor(currentTime / 60);  
-        const currentSeconds = Math.floor(currentTime % 60);  
-
-        // Display duration and current time  
-        durTime.innerText = `${durationMinutes}:${durationSeconds < 10 ? '0' : ''}${durationSeconds}`;  
-        currTime.innerText = `${currentMinutes}:${currentSeconds < 10 ? '0' : ''}${currentSeconds}`;  
-    }   
-}  
-
-// Change time with click in progress bar  
-function setProgress(e) {  
-    const width = progressContainer.clientWidth;  
-    const clickX = e.offsetX;  
-    const duration = audio.duration;  
-    audio.currentTime = (clickX / width) * duration;  
-}  
-
-// Play, next, prev, audio & progressBar EventListener  
-playBtn.addEventListener('click', () => {  
-    const isPlaying = musicContainer.classList.contains('play');  
-    if (isPlaying) {  
-        pauseSong();  
-    } else {  
-        playSong();  
-    }  
-});  
-
-nextBtn.addEventListener('click', nextSong);  
-prevBtn.addEventListener('click', prevSong);  
-audio.addEventListener('timeupdate', updateProgress);  
-progressContainer.addEventListener('click', setProgress);  
-
-// Play next song when current song ends  
-audio.addEventListener('ended', nextSong);  
-
-// Load first music when DOM is ready  
-document.addEventListener('DOMContentLoaded', () => {  
-    loadSong(songs[songIndex]);  
+seekBar.addEventListener('click', (event) => seekTo(event.clientX));
+seekBar.addEventListener('keydown', (event) => {
+  if (!Number.isFinite(audio.duration)) return;
+  const step = event.shiftKey ? 10 : 5;
+  if (event.key === 'ArrowRight' || event.key === 'ArrowUp') audio.currentTime = Math.min(audio.duration, audio.currentTime + step);
+  else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') audio.currentTime = Math.max(0, audio.currentTime - step);
+  else if (event.key === 'Home') audio.currentTime = 0;
+  else if (event.key === 'End') audio.currentTime = audio.duration;
+  else return;
+  event.preventDefault();
 });
+
+volumeSlider.addEventListener('input', () => {
+  audio.volume = Number(volumeSlider.value);
+  if (audio.volume > 0) previousVolume = audio.volume;
+  updateVolumeControl();
+});
+volumeButton.addEventListener('click', () => {
+  if (audio.volume > 0) {
+    previousVolume = audio.volume;
+    audio.volume = 0;
+  } else {
+    audio.volume = previousVolume || 1;
+  }
+  volumeSlider.value = String(audio.volume);
+  updateVolumeControl();
+});
+
+audio.volume = Number(volumeSlider.value);
+updateVolumeControl();
+loadSong(songIndex);
