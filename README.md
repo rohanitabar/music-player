@@ -1,6 +1,6 @@
-# Music Player
+# Sonora Music Player
 
-A small, responsive browser-based music player with a bundled six-track playlist. It is built with plain HTML, CSS, and JavaScript and has no build step or package dependencies.
+A responsive, browser-based music player with a searchable library, favorites, custom playlists, and local audio imports. Sonora uses plain HTML, CSS, and JavaScript; it has no build step or package dependencies.
 
 ## Run locally
 
@@ -10,21 +10,30 @@ Open `index.html` in a browser, or serve the project directory with a local HTTP
 python -m http.server 8000
 ```
 
-Then visit `http://localhost:8000`. Serving the files over HTTP is recommended because browser audio behavior can vary when pages are opened directly from disk.
+Then visit `http://localhost:8000`. A local server is recommended for consistent audio and browser storage behavior.
 
-## Player controls
+## Features
 
-- Play or pause the current track.
-- Skip to the next or previous track. The playlist wraps at either end and advances automatically when a track finishes.
-- Click or focus the progress bar to seek. With the bar focused, use the arrow keys to move by 5 seconds, `Shift` plus an arrow key to move by 10 seconds, or `Home` and `End` to jump to the beginning and end.
-- Adjust the volume with the slider or mute and restore it with the speaker button.
+- Play, pause, seek, and adjust volume.
+- Search the library and switch between all songs, favorites, recently played, and custom playlists.
+- Import multiple audio files from your device. Supported common formats include MP3, WAV, M4A, OGG, FLAC, and AAC.
+- Create, rename, and delete playlists. Add songs to a playlist or remove them from it.
+- Save favorites, playlists, playback settings, and recent tracks in browser storage.
+- Use shuffle and cycle repeat between off, all, and one track.
+
+Imported audio files are stored in this browser on this device using IndexedDB. Favorites, playlists, and playback settings use local storage. This data does not sync between devices and is cleared if the browser's site data is removed. Removing an imported song from Sonora does not delete its original file.
+
+## Keyboard controls
+
+- Focus the progress bar and use the arrow keys to seek by 5 seconds. Hold `Shift` to seek by 10 seconds. `Home` and `End` jump to the start and end.
+- Use `Tab` and `Enter` or `Space` to navigate and activate player controls.
 
 ## Project structure
 
-- `index.html` - player markup and local stylesheet references.
-- `assets/css/style.css` - player layout and responsive styles.
-- `assets/js/app.js` - playlist, playback, seeking, and volume controls.
-- `music/` - audio tracks used by the playlist.
-- `img/` - album covers, in playlist order.
+- `index.html` - player and library markup.
+- `assets/css/style.css` - responsive styling.
+- `assets/js/app.js` - playback, library, playlists, and browser storage.
+- `music/` - bundled audio tracks.
+- `img/` - bundled album covers.
 
-To change the playlist, update the `songs` array in `assets/js/app.js` and keep each audio filename and cover filename in sync with the files in `music/` and `img/`.
+To add bundled tracks, put the audio file in `music/`, add its title and filename to `bundledTracks` in `assets/js/app.js`, and add the matching cover image in `img/`.

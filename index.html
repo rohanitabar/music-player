@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="A lightweight music player for a six-track playlist." />
+    <meta name="description" content="A personal music player with playlists, favorites, and local audio imports." />
     <link rel="stylesheet" href="./assets/css/all.min.css" />
     <link rel="stylesheet" href="./assets/css/svg-with-js.min.css" />
     <link rel="stylesheet" href="./assets/css/style.css" />
@@ -23,7 +23,7 @@
             <span class="brand-tagline">YOUR MUSIC, YOUR MOMENT</span>
           </span>
         </a>
-        <span class="local-status"><span class="status-dot"></span> YOUR MUSIC LIBRARY</span>
+        <span class="local-status"><span class="status-dot"></span> YOUR MUSIC LIBRARY <span id="header-track-count">6 TRACKS</span></span>
       </header>
 
       <section class="player-card" id="music-container" aria-label="Music player">
@@ -31,12 +31,10 @@
           <div class="artwork-glow" aria-hidden="true"></div>
           <div class="artwork-disc">
             <div class="img-container" id="cover">
-              <img src="./img/Koohe-Ghaf.jpg" id="img-1" alt="Koohe Ghaf album cover" />
-              <img src="./img/Eshghemoon.jpg" id="img-2" alt="Eshghemoon album cover" hidden />
-              <img src="./img/Emperatoore-Divooneha.jpg" id="img-3" alt="Emperatoore Divooneha album cover" hidden />
-              <img src="./img/Baladam-Boodi.jpg" id="img-4" alt="Baladam Boodi album cover" hidden />
-              <img src="./img/2ta-Cheshat.jpg" id="img-5" alt="2ta Cheshat album cover" hidden />
-              <img src="./img/Rasti-Rasti.jpg" id="img-6" alt="Rasti Rasti album cover" hidden />
+              <img src="./img/Koohe-Ghaf.jpg" id="cover-image" alt="Koohe Ghaf album cover" />
+              <div class="cover-placeholder" id="cover-placeholder" aria-hidden="true" hidden>
+                <i class="fas fa-music"></i><span>SONORA</span>
+              </div>
             </div>
           </div>
           <div class="artwork-caption">
@@ -48,7 +46,12 @@
         <div class="player-content">
           <div class="track-heading">
             <p class="eyebrow">ON YOUR PLAYLIST</p>
-            <h1 id="title" aria-live="polite">Koohe Ghaf</h1>
+            <div class="track-title-row">
+              <h1 id="title" aria-live="polite">Koohe Ghaf</h1>
+              <button class="favorite-current" id="current-favorite" type="button" aria-label="Add to favorites" aria-pressed="false">
+                <i class="fas fa-heart" aria-hidden="true"></i>
+              </button>
+            </div>
             <p class="track-subtitle">A little space to get lost in the music.</p>
           </div>
 
@@ -84,6 +87,15 @@
             </button>
           </div>
 
+          <div class="playback-options">
+            <button class="option-button" id="shuffle" type="button" aria-label="Shuffle off" aria-pressed="false">
+              <i class="fas fa-shuffle" aria-hidden="true"></i><span>SHUFFLE</span>
+            </button>
+            <button class="option-button" id="repeat" type="button" aria-label="Repeat off" aria-pressed="false">
+              <i class="fas fa-repeat" aria-hidden="true"></i><span id="repeat-label">REPEAT OFF</span>
+            </button>
+          </div>
+
           <div class="volume-row">
             <button class="volume-button" id="volume-icon" type="button" aria-label="Mute" aria-pressed="false">
               <i class="fas fa-volume-high" aria-hidden="true"></i>
@@ -105,7 +117,58 @@
         <audio id="audio" preload="metadata"></audio>
       </section>
 
-      <p class="page-note"><i class="fas fa-headphones" aria-hidden="true"></i> Take a breath. Press play.</p>
+      <section class="library-card" aria-labelledby="library-heading">
+        <div class="library-header">
+          <div>
+            <p class="eyebrow">YOUR COLLECTION</p>
+            <div class="library-title-row">
+              <h2 id="library-heading">Your Library</h2>
+              <span class="library-count" id="library-count">6 tracks</span>
+            </div>
+          </div>
+          <div class="library-actions">
+            <input class="visually-hidden" id="audio-import" type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac,.aac" multiple />
+            <label class="add-songs-button" for="audio-import"><i class="fas fa-plus" aria-hidden="true"></i> Add songs</label>
+            <button class="new-playlist-button" id="new-playlist" type="button"><i class="fas fa-list-ul" aria-hidden="true"></i> New playlist</button>
+          </div>
+        </div>
+
+        <div class="library-toolbar">
+          <label class="search-box" for="library-search">
+            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="library-search" type="search" placeholder="Search your songs" autocomplete="off" />
+          </label>
+          <label class="playlist-target-label" for="playlist-target">ADD TRACKS TO</label>
+          <select id="playlist-target" aria-label="Choose playlist to add tracks to">
+            <option value="">Choose playlist</option>
+          </select>
+        </div>
+
+        <nav class="library-tabs" id="library-tabs" aria-label="Library views">
+          <button class="library-tab active" type="button" data-view="all" aria-pressed="true">All songs</button>
+          <button class="library-tab" type="button" data-view="favorites" aria-pressed="false">Favorites</button>
+          <button class="library-tab" type="button" data-view="recent" aria-pressed="false">Recently played</button>
+          <span class="playlist-tabs" id="playlist-tabs"></span>
+        </nav>
+
+        <p class="library-message" id="library-message" role="status" hidden></p>
+        <ul class="track-list" id="track-list" aria-label="Songs"></ul>
+      </section>
+
+      <dialog class="playlist-dialog" id="playlist-dialog" aria-labelledby="playlist-dialog-title">
+        <form id="playlist-form" method="dialog">
+          <p class="eyebrow">YOUR COLLECTION</p>
+          <h2 id="playlist-dialog-title">Create a playlist</h2>
+          <label for="playlist-name">Playlist name</label>
+          <input id="playlist-name" name="playlistName" maxlength="40" required placeholder="Late night favorites" />
+          <div class="dialog-actions">
+            <button class="dialog-cancel" id="cancel-playlist" type="button">Cancel</button>
+            <button class="dialog-save" type="submit">Save playlist</button>
+          </div>
+        </form>
+      </dialog>
+
+      <p class="page-note"><i class="fas fa-headphones" aria-hidden="true"></i> Your collection stays on this device.</p>
     </main>
   </body>
 </html>
