@@ -54,6 +54,7 @@ let currentQueue = [];
 let shuffleEnabled = false;
 let repeatMode = 'off';
 let previousVolume = 1;
+let selectedPlaylistId = '';
 let editingPlaylistId = null;
 let database = null;
 let libraryMessageTimer = 0;
@@ -93,6 +94,7 @@ function saveState() {
       recentIds,
       activeTrackId: currentTrackId,
       activeView,
+      selectedPlaylistId,
       shuffleEnabled,
       repeatMode,
       volume: audio.volume,
@@ -270,6 +272,15 @@ function playTrack(trackId, queueIds = getVisibleTracks().map((track) => track.i
   playSong();
 }
 
+function toggleTrackPlayback(trackId, queueIds) {
+  if (trackId === currentTrackId) {
+    if (audio.paused) playSong();
+    else audio.pause();
+    return;
+  }
+  playTrack(trackId, queueIds);
+}
+
 function getBaseViewTracks() {
   if (activeView === 'favorites') return allTracks().filter((track) => favorites.has(track.id));
   if (activeView === 'recent') return recentIds.map(getTrack).filter(Boolean);
@@ -301,9 +312,10 @@ function makeTrackRow(track, queue) {
   const main = document.createElement('button');
   main.type = 'button';
   main.className = 'track-main';
-  main.setAttribute('aria-label', `Play ${track.title}`);
-  main.setAttribute('aria-pressed', String(track.id === currentTrackId));
-  main.addEventListener('click', () => playTrack(track.id, queue));
+  const isPlaying = track.id === currentTrackId && !audio.paused;
+  main.setAttribute('aria-label', `${isPlaying ? 'Pause' : 'Play'} ${track.title}`);
+  main.setAttribute('aria-pressed', String(isPlaying));
+  main.addEventListener('click', () => toggleTrackPlayback(track.id, queue));
 
   const art = document.createElement('span');
   art.className = 'track-art';
@@ -330,7 +342,7 @@ function makeTrackRow(track, queue) {
   details.append(name, source);
 
   const playIcon = document.createElement('i');
-  playIcon.className = `fas ${track.id === currentTrackId && !audio.paused ? 'fa-volume-high' : 'fa-play'}`;
+  playIcon.className = `fas ${isPlaying ? 'fa-pause' : 'fa-play'}`;
   playIcon.setAttribute('aria-hidden', 'true');
   main.append(art, details, playIcon);
 
@@ -371,11 +383,12 @@ function makeTrackRow(track, queue) {
   return row;
 }
 
-function renderPlaylistTargets() {
-  const selected = playlistTarget.value;
+function renderPlaylistTargets(preferredId = '') {
+  const selected = preferredId || selectedPlaylistId || playlistTarget.value;
   playlistTarget.replaceChildren(new Option('Choose playlist', ''));
   playlists.forEach((playlist) => playlistTarget.add(new Option(playlist.name, playlist.id)));
   if (playlists.some((playlist) => playlist.id === selected)) playlistTarget.value = selected;
+  selectedPlaylistId = playlistTarget.value;
 }
 
 function makePlaylistTab(playlist) {
@@ -405,14 +418,14 @@ function makePlaylistTab(playlist) {
   return group;
 }
 
-function renderLibrary() {
+function renderLibrary(preferredPlaylistId = '') {
   clearTimeout(libraryMessageTimer);
   libraryMessageTimer = 0;
   const tracks = allTracks();
   const visible = getVisibleTracks();
   libraryCount.textContent = `${tracks.length} ${tracks.length === 1 ? 'track' : 'tracks'}`;
   headerTrackCount.textContent = `${tracks.length} ${tracks.length === 1 ? 'TRACK' : 'TRACKS'}`;
-  renderPlaylistTargets();
+  renderPlaylistTargets(preferredPlaylistId);
 
   libraryTabs.querySelectorAll('[data-view]').forEach((tab) => {
     const active = tab.dataset.view === activeView;
@@ -429,6 +442,7 @@ function renderLibrary() {
 
 function setActiveView(view) {
   activeView = view;
+  if (view.startsWith('playlist:')) selectedPlaylistId = view.slice('playlist:'.length);
   saveState();
   renderLibrary();
 }
@@ -443,10 +457,19 @@ function toggleFavorite(trackId) {
 
 function addTrackToPlaylist(trackId) {
   const playlist = playlists.find((item) => item.id === playlistTarget.value);
-  if (!playlist || playlist.trackIds.includes(trackId)) return;
+  if (!playlist) {
+    showLibraryMessage('Choose or create a playlist first.');
+    return;
+  }
+  if (playlist.trackIds.includes(trackId)) {
+    setActiveView(`playlist:${playlist.id}`);
+    showLibraryMessage(`Already in ${playlist.name}.`);
+    return;
+  }
   playlist.trackIds.push(trackId);
+  selectedPlaylistId = playlist.id;
   saveState();
-  renderLibrary();
+  setActiveView(`playlist:${playlist.id}`);
   showLibraryMessage(`Added to ${playlist.name}.`);
 }
 
@@ -474,16 +497,18 @@ function savePlaylist(event) {
   const name = playlistNameInput.value.trim();
   if (!name) return;
   const existing = playlists.find((item) => item.id === editingPlaylistId);
+  let createdPlaylistId = '';
   if (existing) existing.name = name;
   else {
     const playlist = { id: createId('playlist'), name, trackIds: [] };
     playlists.push(playlist);
-    playlistTarget.value = playlist.id;
+    createdPlaylistId = playlist.id;
+    selectedPlaylistId = playlist.id;
   }
   playlistDialog.close();
   playlistForm.reset();
   saveState();
-  renderLibrary();
+  renderLibrary(createdPlaylistId);
 }
 
 function deletePlaylist(playlistId) {
@@ -612,6 +637,9 @@ function restoreState(state) {
   if (['all', 'favorites', 'recent'].includes(state.activeView) || playlists.some((item) => `playlist:${item.id}` === state.activeView)) {
     activeView = state.activeView;
   }
+  selectedPlaylistId = playlists.some((item) => item.id === state.selectedPlaylistId)
+    ? state.selectedPlaylistId
+    : activeView.startsWith('playlist:') ? activeView.slice('playlist:'.length) : '';
 }
 
 async function initialize() {
@@ -701,7 +729,11 @@ libraryTabs.addEventListener('click', (event) => {
   if (tab) setActiveView(tab.dataset.view);
 });
 librarySearch.addEventListener('input', renderLibrary);
-playlistTarget.addEventListener('change', renderLibrary);
+playlistTarget.addEventListener('change', () => {
+  selectedPlaylistId = playlistTarget.value;
+  saveState();
+  renderLibrary();
+});
 document.getElementById('new-playlist').addEventListener('click', () => openPlaylistDialog());
 document.getElementById('cancel-playlist').addEventListener('click', () => playlistDialog.close());
 playlistForm.addEventListener('submit', savePlaylist);
